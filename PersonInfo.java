@@ -13,4 +13,3 @@ public class PersonInfo {
         System.out.println(zipCode);
     }
 }
-
