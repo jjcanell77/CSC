@@ -6,20 +6,21 @@ public class GradeStatistics {
         Scanner scanner = new Scanner(System.in);
         float sum = 0, grade;
         int count = 0;
-        float max = Float.MIN_VALUE, min = Float.MAX_VALUE;
-
+        float max = 0, min = 100; // Set initial max to 0 and min to 100
         for (int i = 0; i < 10; i++) {
-            System.out.println("Enter grade " + (i + 1));
-            System.out.println("or a non-numeric value to finish/exit:");
+            System.out.println("Enter grade " + (i + 1) + " (or a non-numeric value to finish):");
             try {
                 grade = scanner.nextFloat();
+                if (grade < 0 || grade > 100) {
+                    System.out.println("Grade must be between 0 and 100. Please try again.");
+                    i--; 
+                    continue;
+                }
             } catch (InputMismatchException e) {
                 break; 
             }
-
             sum += grade;
             count++;
-
             if (grade > max) {
                 max = grade;
             }
@@ -34,7 +35,7 @@ public class GradeStatistics {
             System.out.println("Maximum grade: " + max);
             System.out.println("Minimum grade: " + min);
         } else {
-            System.out.println("No grades were entered.");
+            System.out.println("No valid grades were entered.");
         }
     }
 }
