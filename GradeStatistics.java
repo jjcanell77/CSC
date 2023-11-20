@@ -6,7 +6,7 @@ public class GradeStatistics {
         Scanner scanner = new Scanner(System.in);
         float sum = 0, grade;
         int count = 0;
-        float max = 0, min = 100; // Set initial max to 0 and min to 100
+        float max = 0, min = 100;
         for (int i = 0; i < 10; i++) {
             System.out.println("Enter grade " + (i + 1) + " (or a non-numeric value to finish):");
             try {
