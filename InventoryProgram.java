@@ -51,12 +51,12 @@ public class InventoryProgram {
                     return new String[]{"No vehicle data available"};
                 }
                 return new String[]{make, model, color, String.valueOf(year), String.valueOf(mileage)};
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 return new String[]{"Failed to list vehicle: " + e.getMessage()};
             }
         }
     }
-    
 
     public void start() {
         boolean running = true;
@@ -97,99 +97,121 @@ public class InventoryProgram {
     }
 
     private void addCarProcedure() {
-        System.out.println("Enter the make of the vehicle:");
-        String make = scanner.nextLine();
-        System.out.println("Enter the model of the vehicle:");
-        String model = scanner.nextLine();
-        System.out.println("Enter the color of the vehicle:");
-        String color = scanner.nextLine();
-        System.out.println("Enter the year of the vehicle:");
-        int year = getValidatedIntegerInput();
-        System.out.println("Enter the mileage of the vehicle:");
-        int mileage = getValidatedIntegerInput();
-        Car newCar = new Car(make, model, color, year, mileage);
-        cars.add(newCar);
+        try{
+            System.out.println("Enter the make of the vehicle:");
+            String make = scanner.nextLine();
+            System.out.println("Enter the model of the vehicle:");
+            String model = scanner.nextLine();
+            System.out.println("Enter the color of the vehicle:");
+            String color = scanner.nextLine();
+            System.out.println("Enter the year of the vehicle:");
+            int year = getValidatedIntegerInput();
+            System.out.println("Enter the mileage of the vehicle:");
+            int mileage = getValidatedIntegerInput();
+            Car newCar = new Car(make, model, color, year, mileage);
+            cars.add(newCar);
+            System.out.println("Added Vehicle" + make);
+            listAllCars();
+        }
+        catch (Exception e) {
+            System.out.println("Failed to add vehicle: " + e.getMessage());
+        }
     }
     
     private void updateCarProcedure() {
-        if (cars.isEmpty()) {
+        try{
+            if (cars.isEmpty()) {
             System.out.println("No vehicles to update.");
             return;
+            }
+            listAllCars();
+            System.out.println("Select the index of the vehicle to update:");
+            int index = getValidatedIntegerInput();
+            if (index >= 0 && index < cars.size()) {
+                Car car = cars.get(index);
+                System.out.println("Enter the new make of the vehicle (or press Enter to keep current):");
+                String make = scanner.nextLine();
+                System.out.println("Enter the new model of the vehicle (or press Enter to keep current):");
+                String model = scanner.nextLine();
+                System.out.println("Enter the new color of the vehicle (or press Enter to keep current):");
+                String color = scanner.nextLine();
+                System.out.println("Enter the new year of the vehicle (or press Enter 0):");
+                int year = getValidatedIntegerInput();
+                System.out.println("Enter the new mileage of the vehicle (or press Enter 0):");
+                int mileage = getValidatedIntegerInput();
+                String result = car.updateCar(make, model, color, year, mileage);
+                System.out.println("Updated to " + result);
+                listAllCars();
+            } 
         }
-        listAllCars();
-        System.out.println("Select the index of the vehicle to update:");
-        int index = getValidatedIntegerInput();
-        if (index >= 0 && index < cars.size()) {
-            Car car = cars.get(index);
-            System.out.println("Enter the new make of the vehicle (or press Enter to keep current):");
-            String make = scanner.nextLine();
-            System.out.println("Enter the new model of the vehicle (or press Enter to keep current):");
-            String model = scanner.nextLine();
-            System.out.println("Enter the new color of the vehicle (or press Enter to keep current):");
-            String color = scanner.nextLine();
-            System.out.println("Enter the new year of the vehicle (or press Enter 0):");
-            int year = getValidatedIntegerInput();
-            System.out.println("Enter the new mileage of the vehicle (or press Enter 0):");
-            int mileage = getValidatedIntegerInput();
-            String result = car.updateCar(make, model, color, year, mileage);
-            System.out.println(result);
-        } 
-        else {
-            System.out.println("Invalid index.");
+        catch (Exception e) {
+            System.out.println("Failed to update vehicle: " + e.getMessage());
         }
     }
 
     private void removeCarProcedure() {
-        if (cars.isEmpty()) {
-            System.out.println("No vehicles to remove.");
-            return;
+        try{
+            if (cars.isEmpty()) {
+                System.out.println("No vehicles to remove.");
+                return;
+            }
+            listAllCars();
+            System.out.println("Select the index of the vehicle to remove:");
+            int index = getValidatedIntegerInput();
+            if (index >= 0 && index < cars.size()) {
+                cars.remove(index);
+                System.out.println("Vehicle removed successfully.");
+                listAllCars();
+            }
         }
-        listAllCars();
-        System.out.println("Select the index of the vehicle to remove:");
-        int index = getValidatedIntegerInput();
-        if (index >= 0 && index < cars.size()) {
-            cars.remove(index);
-            System.out.println("Vehicle removed successfully.");
-        } else {
-            System.out.println("Invalid index.");
+        catch (Exception e) {
+            System.out.println("Failed to remove vehicle: " + e.getMessage());
         }
     }
 
     private void listCarProcedure() {
-        if (cars.isEmpty()) {
-            System.out.println("No vehicles available.");
-            return;
-        }
-        listAllCars();
-        System.out.println("Select the index of the vehicle to view detailed information:");
-        int index = scanner.nextInt();
-        scanner.nextLine();
-        if (index >= 0 && index < cars.size()) {
-            Car car = cars.get(index);
-            String[] carInfo = car.listCarInfo();
-            for (String info : carInfo) {
-                System.out.println(info);
+        try{
+            if (cars.isEmpty()) {
+                System.out.println("No vehicles available.");
+                return;
             }
-        } 
-        else {
-            System.out.println("Invalid index.");
+            listAllCars();
+            System.out.println("Select the index of the vehicle to view detailed information:");
+            int index = scanner.nextInt();
+            scanner.nextLine();
+            if (index >= 0 && index < cars.size()) {
+                Car car = cars.get(index);
+                String[] carInfo = car.listCarInfo();
+                for (String info : carInfo) {
+                    System.out.println(info);
+                }
+            } 
         }
+        catch (Exception e) {
+            System.out.println("Failed to remove vehicle: " + e.getMessage());
+        }
+        
     }
 
     private void listAllCars() {
-        if (cars.isEmpty()) {
-            System.out.println("No vehicles available.");
-            return;
-        }
-        for (int i = 0; i < cars.size(); i++) {
-            Car car = cars.get(i);
-            String[] carInfo = car.listCarInfo();
-            System.out.println("Car " + i + ":");
-            for (String info : carInfo) {
-                System.out.println("\t" + info);
+        try{
+            if (cars.isEmpty()) {
+                System.out.println("No vehicles available.");
+                return;
             }
-            System.out.println();
+            for (int i = 0; i < cars.size(); i++) {
+                Car car = cars.get(i);
+                String[] carInfo = car.listCarInfo();
+                System.out.println("Car " + i + ":");
+                for (String info : carInfo) {
+                    System.out.println("\t" + info);
+                }
+                System.out.println();
+            }
         }
+        catch (Exception e) {
+            System.out.println("Failed to list all vehicles: " + e.getMessage());
+        } 
     }    
 
     private void printToFile(String filePath) {
