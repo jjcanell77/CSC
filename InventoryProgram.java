@@ -188,7 +188,7 @@ public class InventoryProgram {
             for (String info : carInfo) {
                 System.out.println("\t" + info);
             }
-            System.out.println(); // Adding a blank line for better readability between cars
+            System.out.println();
         }
     }    
 
