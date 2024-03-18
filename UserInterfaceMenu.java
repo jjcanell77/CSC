@@ -56,9 +56,7 @@ public class UserInterfaceMenu extends Application  {
      private void randomColorChange() {
          Random randomNum = new Random();
          int num1 = (int)randomNum.nextInt(266);
-         int num2 = (int)randomNum.nextInt(266);
-         int num3 = (int)randomNum.nextInt(266);
-         Color randomGreenHue = Color.rgb(num1, num2, num3);
+         Color randomGreenHue = Color.rgb(0, num1, 0);
          circle.setFill(randomGreenHue);
      }
 
