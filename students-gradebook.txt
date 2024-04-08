@@ -1,0 +1,4 @@
+Student Name: Blake	Address: 4630 Highland Crest Drive		GPA: 2.0
+Student Name: Diana	Address: 4630 Highland Crest Drive		GPA: 4.0
+Student Name: Jesse	Address: 3147 Chesterfield Lane		GPA: 3.5
+Student Name: John	Address: Country Club Blvd		GPA: 3.2
