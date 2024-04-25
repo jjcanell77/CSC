@@ -1,4 +1,4 @@
-package CSC400.M1.M2;
+package CSC400.M2;
 
 import java.util.*;
 

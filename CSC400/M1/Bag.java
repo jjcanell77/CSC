@@ -1,61 +1,92 @@
 package CSC400.M1;
-
-import java.util.HashMap;
-import java.util.Map;
-
+import java.util.*;
+/* 
+     Represents a collection, or multiset, that allows duplicate 
+     elements and does not enforce any particular order. The Bag 
+     class uses a generic type T to allow storage of any type of items.
+*/
 public class Bag<T> {
-    private Map<T, Integer> contents;
+     private List<T> contents;
 
-    public Bag() {
-        this.contents = new HashMap<>();
-    }
-
-    /**
-     * Adds an item to the bag.
-     * @param item The item to be added.
+     /* 
+          Constructs an empty Bag. 
      */
-    public void add(T item) {
-        contents.put(item, contents.getOrDefault(item, 0) + 1);
-    }
+     public Bag() {
+          this.contents = new ArrayList<>();
+     }
 
-    /**
-     * Removes one occurrence of the specified item from the bag, if it exists.
-     * @param item The item to remove.
+     /* 
+          Adds the specified item to the bag.
      */
-    public void remove(T item) {
-        if (contents.containsKey(item)) {
-            int count = contents.get(item);
-            if (count > 1)
-                contents.put(item, count - 1);
-            else
-                contents.remove(item);
-        }
-    }
+     public void add(T item) {
+          if (item == null){
+               throw new IllegalArgumentException("Cannot add null to a Bag.");
+          } 
+          contents.add(item);
+     }
 
-    /**
-     * Checks if the bag contains the specified item.
-     * @param item The item to check.
-     * @return true if the item exists in the bag, otherwise false.
+     /*
+          Removes one occurrence of the specified item from the bag, if present.
      */
-    public boolean contains(T item) {
-        return contents.containsKey(item);
-    }
+     public boolean remove(T item) {
+          return contents.remove(item);
+     }
 
-    /**
-     * Returns the count of the specified item in the bag.
-     * @param item The item whose count is to be returned.
-     * @return The count of the item.
+     /*
+          Checks whether the specified item is in the bag.
      */
-    public int count(T item) {
-        return contents.getOrDefault(item, 0);
-    }
+     public boolean contains(T item) {
+          return contents.contains(item);
+     }
 
-    /**
-     * Returns a string representation of the bag contents.
-     * @return A string representing the items and their counts in the bag.
+     /*
+          Counts the amount of times item is in the bag. 
+     */
+     public int count(T item) {
+          int count = 0;
+          if(contents.contains(item)){
+               for(T element : contents){
+                    count = element == item ? count + 1 : count;
+               }
+          }
+          return count;
+     }
+
+     /*
+          Returns a string representation of the bag's contents.
      */
     @Override
-    public String toString() {
-        return contents.toString();
-    }
+     public String toString() {
+          return contents.toString();
+     }
+
+     /*
+          Provides the tests for Contains and Counts by accouting for duplicates
+     */
+     private static void displayFruitDetails(Bag<String> bag, String[] fruits) {
+          List<String> checkedFruits = new ArrayList<>();
+          for (String fruit : fruits) {
+              if (!checkedFruits.contains(fruit)) {
+                  System.out.println("Contains " + fruit + ": \t" + bag.contains(fruit));
+                  System.out.println("Count of " + fruit + ": \t" + bag.count(fruit));
+                  checkedFruits.add(fruit);
+              }
+          }
+     }
+      
+
+     public static void main(String[] args) {
+          Bag<String> myBag = new Bag<>();
+          String[] fruits = {"apple", "banana", "apple", "strawberry"};
+          for (String string : fruits) {
+               myBag.add(string);
+          }
+
+          System.out.println("Bag contains:\t \t" + myBag);
+          displayFruitDetails(myBag, fruits);
+
+          myBag.remove("apple");
+          System.out.println("\nBag afterwards:\t \t" + myBag);
+          displayFruitDetails(myBag, fruits);
+     }
 }
