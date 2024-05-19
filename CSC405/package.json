@@ -1,0 +1,21 @@
+{
+  "name": "m2l",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "budo index.js --live"
+  },
+  "author": "",
+  "license": "",
+  "devDependencies": {
+    "budo": "^11.2.0"
+  },
+  "dependencies": {
+    "@babel/core": "^7.24.5",
+    "gl-buffer": "^2.1.2",
+    "gl-mat4": "^1.2.0",
+    "gl-now": "^1.4.0",
+    "gl-shader": "^4.2.1"
+  }
+}
