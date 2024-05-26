@@ -1,5 +1,11 @@
 package CSC400.M2;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /* 
      Represents a collection, or multiset, that allows duplicate 
      elements and does not enforce any particular order. The Bag 
@@ -7,12 +13,20 @@ import java.util.*;
 */
 public class Bag<T> {
      private List<T> contents;
+     private Map<T, Integer> contentsFrequency;
 
      /* 
           Constructs an empty Bag that is an ArrayList. 
      */
      public Bag() {
-          this.contents = new ArrayList<>();
+          contents = new ArrayList<>();
+          contentsFrequency = new HashMap<>();
+     }
+     /* 
+          Constructs a Bag from a collection instead of empty 
+     */
+     public Bag(Collection<T> collection) {
+        contents = new ArrayList<>(collection);
      }
 
      /* 
@@ -23,12 +37,19 @@ public class Bag<T> {
                throw new IllegalArgumentException("Cannot add null to a Bag.");
           } 
           contents.add(item);
+          contentsFrequency.put(item, contentsFrequency.getOrDefault(item, 0) + 1);
      }
 
      /*
           Removes one occurrence of the specific item from the bag, if present.
      */
      public boolean remove(T item) {
+          if(contents.contains(item)){
+               contentsFrequency.put(item, contentsFrequency.get(item) - 1);
+               if(contentsFrequency.get(item) == 0) {
+                    contentsFrequency.remove(item);
+               }
+          }
           return contents.remove(item);
      }
 
@@ -36,7 +57,7 @@ public class Bag<T> {
           Checks whether the specific item is in the bag.
      */
      public boolean contains(T item) {
-          return contents.contains(item);
+          return contentsFrequency.containsKey(item);
      }
 
      /*
@@ -50,13 +71,7 @@ public class Bag<T> {
           Counts the amount of times a particualar item is in the bag. 
      */
      public int count(T item) {
-          int count = 0;
-          if(contains(item)){
-               for(T element : contents){
-                    count = element == item ? count + 1 : count;
-               }
-          }
-          return count;
+          return contentsFrequency.getOrDefault(item, 0);
      }
 
      /*
@@ -64,21 +79,16 @@ public class Bag<T> {
      */
      public void merge(Bag<T> otherBag) {
           for (T item : otherBag.contents) {
-               this.contents.add(item);
+               this.add(item);
           }
      }
 
      /*
-          Returns a new bag that does not have duplicates
+          Returns a new bag that does not have duplicates by intializng a new bag with the keys from contentsFrequency
      */
      public Bag<T> distinct() {
-          Bag<T> checkeditems = new Bag<>();
-          for (T element : contents) {
-               if (!checkeditems.contains(element)) {
-                    checkeditems.add(element);
-               }
-          }
-          return checkeditems;
+          Bag<T> uniqueBag = new Bag<>(contentsFrequency.keySet());
+          return uniqueBag;
      }
 
      /*
@@ -96,14 +106,13 @@ public class Bag<T> {
           System.out.println("Contents: \t" + bag);
           System.out.println("Size: \t\t" + bag.size() + "\n");
      }
-      
 
      public static void main(String[] args) {
-          //   Fixed-arrays of fruits
+          // Fixed-arrays of fruits
           String[] fruits = {"apple", "banana", "apple", "strawberry"};
           String[] moreFruits = {"orange", "apple", "grape"};
           
-          //   First bag
+          // First bag
           Bag<String> originalBag = new Bag<>();
           for (String fruit : fruits) {
                originalBag.add(fruit);
@@ -111,7 +120,7 @@ public class Bag<T> {
           System.out.println("Original Bag:");
           displayDetails(originalBag);
 
-          //   Second bag
+          // Second bag
           Bag<String> anotherBag = new Bag<>();
           for (String fruit : moreFruits) {
                anotherBag.add(fruit);
@@ -119,7 +128,7 @@ public class Bag<T> {
           System.out.println("Another Bag:");
           displayDetails(anotherBag);
 
-          //   Merged bags into current
+          // Merged bags into current
           originalBag.merge(anotherBag);
           System.out.println("Merged Bag:");
           displayDetails(originalBag);
