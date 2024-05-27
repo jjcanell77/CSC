@@ -105,13 +105,6 @@ function drawScene(gl, programInfo, buffers){
   gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
   gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix);
 
-
-  // const projectionMatrix = mat4.create();
-  // mat4.perspective(projectionMatrix, fieldOfView, aspect, near, far);
-
-  // const modelViewMatrix = mat4.create();
-  // mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -radius]);
-
   gl.useProgram(programInfo.program);
 
   gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix);
