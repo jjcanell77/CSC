@@ -1,140 +1,150 @@
-let cubeRotation = 0.0;
-let deltaTime = 0;
+var cubeRotation = 0.0;
+var deltaTime = 0;
+var radius = 4.0;
+var theta = 0;
+var phi = 0;
+var near = 0.3;
+var far = 3.0;
+var left = -5.0;
+var right = 5.0;
+var bottom = -5.0;
+var ytop = 5.0;
+var fovy = 45.0;
+var aspect = 1.0;
 
-main();
+const at = vec3.fromValues(0.0, 0.0, 0.0);
+const up = vec3.fromValues(0.0, 1.0, 0.0);
+
+const vertices = [
+    vec4.fromValues(-0.5, -0.5,  1.5, 1.0),
+    vec4.fromValues(-0.5,  0.5,  1.5, 1.0),
+    vec4.fromValues(0.5,  0.5,  1.5, 1.0),
+    vec4.fromValues(0.5, -0.5,  1.5, 1.0),
+    vec4.fromValues(-0.5, -0.5, 0.5, 1.0),
+    vec4.fromValues(-0.5,  0.5, 0.5, 1.0),
+    vec4.fromValues(0.5,  0.5, 0.5, 1.0),
+    vec4.fromValues(0.5, -0.5, 0.5, 1.0)
+];
+
+const vertexColors = [
+    vec4.fromValues(0.0, 0.0, 0.0, 1.0),  // black
+    vec4.fromValues(1.0, 0.0, 0.0, 1.0),  // red
+    vec4.fromValues(1.0, 1.0, 0.0, 1.0),  // yellow
+    vec4.fromValues(0.0, 1.0, 0.0, 1.0),  // green
+    vec4.fromValues(0.0, 0.0, 1.0, 1.0),  // blue
+    vec4.fromValues(1.0, 0.0, 1.0, 1.0),  // magenta
+    vec4.fromValues(0.0, 1.0, 1.0, 1.0),  // cyan
+    vec4.fromValues(1.0, 1.0, 1.0, 1.0)   // white
+];
+
+let pointsArray = [];
+let colorsArray = [];
+
+function quad(a, b, c, d) {
+    pointsArray.push(...vertices[a]);
+    colorsArray.push(...vertexColors[a]);
+    pointsArray.push(...vertices[b]);
+    colorsArray.push(...vertexColors[a]);
+    pointsArray.push(...vertices[c]);
+    colorsArray.push(...vertexColors[a]);
+    pointsArray.push(...vertices[a]);
+    colorsArray.push(...vertexColors[a]);
+    pointsArray.push(...vertices[c]);
+    colorsArray.push(...vertexColors[a]);
+    pointsArray.push(...vertices[d]);
+    colorsArray.push(...vertexColors[a]);
+}
+
+function colorCube() {
+    quad(1, 0, 3, 2);
+    quad(2, 3, 7, 6);
+    quad(3, 0, 4, 7);
+    quad(6, 5, 1, 2);
+    quad(4, 5, 6, 7);
+    quad(5, 4, 0, 1);
+}
 
 function initBuffers(gl){
-  const positionBuffer = initPositionBuffer(gl);
-  const colorBuffer = initColorBuffer(gl);
-  const indexBuffer = initIndexBuffer(gl);
+    colorCube();
+    const positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pointsArray), gl.STATIC_DRAW);
 
-  return {
-    position: positionBuffer,
-    color: colorBuffer,
-    indices: indexBuffer,
-  };
+    const colorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorsArray), gl.STATIC_DRAW);
+
+    return {
+        position: positionBuffer,
+        color: colorBuffer
+    };
 }
 
-function initPositionBuffer(gl){
-  // creates a buffer for the square's positions.
-  const positionBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-  const positions = [
-    // front
-    -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
-    // back
-    -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0,
-    // top
-    -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0,
-    // bottom
-    -1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, -1.0, -1.0, 1.0,
-    // right side
-    1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0,
-    // left side
-    -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0,
-  ];
-  
-  // Now pass the list of positions into WebGL to build the
-  // shape. We do this by creating a Float32Array from the
-  // JavaScript array, then use it to fill the current buffer.
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-  return positionBuffer;
-}
-
-function initColorBuffer(gl){
-  const faceColors = [
-    [1.0, 1.0, 1.0, 1.0], // white
-    [0.0, 1.0, 0.0, 1.0], // red
-    [1.0, 0.0, 0.0, 1.0], // red
-    [0.0, 0.0, 1.0, 1.0], // blue
-    [1.0, 1.0, 0.0, 1.0], // yellow aka red green
-    [1.0, 0.0, 1.0, 1.0], // purple aka blue red
-  ];
-
-  let colors = [];
-  faceColors.forEach(color => {
-    colors = colors.concat(color, color, color, color);
-  });
-
-  const colorBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-  return colorBuffer;
-}
-
-function initIndexBuffer(gl){
-  const indexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-  // defines each face with two triangles
-  const indices = [
-    0, 1, 2, 0, 2, 3, // front
-    4, 5, 6, 4, 6, 7, // back
-    8, 9, 10, 8, 10, 11, // top
-    12, 13, 14, 12, 14, 15, // bottom
-    16, 17, 18, 16, 18, 19, // right
-    20, 21, 22, 20, 22, 23, // left
-  ];
-
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
-  return indexBuffer;
-}
-
-function drawScene(gl, programInfo, buffers, cubeRotation){
+function drawScene(gl, programInfo, buffers){
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  const fieldOfView = (45 * Math.PI) / 180;
-  const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-  const zNear = 0.1;
-  const zFar = 100.0;
-  const projectionMatrix = mat4.create();
-  mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+
+  const eye = vec3.fromValues(
+    radius * Math.sin(theta) * Math.cos(phi),
+    radius * Math.sin(theta) * Math.sin(phi),
+    radius * Math.cos(theta)
+  );
 
   const modelViewMatrix = mat4.create();
-  mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -6.0]);
-  mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation, [0, 0, 1]);
-  mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation * 0.7, [0, 1, 0]);
-  mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation * 0.3, [1, 0, 0]);
+  mat4.lookAt(modelViewMatrix, eye, at, up);
 
-  setPositionAttribute(gl, buffers, programInfo);
-  setColorAttribute(gl, buffers, programInfo);
+  const fieldOfView = (fovy * Math.PI) / 180;
+  const projectionMatrix = mat4.create();
+  mat4.perspective(projectionMatrix, fieldOfView, aspect, near, far);
 
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
+  gl.useProgram(programInfo.program);
+  gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
+  gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix);
+
+
+  // const projectionMatrix = mat4.create();
+  // mat4.perspective(projectionMatrix, fieldOfView, aspect, near, far);
+
+  // const modelViewMatrix = mat4.create();
+  // mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -radius]);
+
   gl.useProgram(programInfo.program);
 
   gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix);
   gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
 
-  const vertexCount = 36;
-  const type = gl.UNSIGNED_SHORT;
-  const offset = 0;
-  gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
-}
+  {
+    const numComponents = 4;
+    const type = gl.FLOAT;
+    const normalize = false;
+    const stride = 0;
+    const offset = 0;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+    gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition, numComponents, type, normalize, stride, offset);
+    gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+  }
 
-function setPositionAttribute(gl, buffers, programInfo){
-  const numComponents = 3;
-  const type = gl.FLOAT;
-  const normalize = false;
-  const stride = 0;
-  const offset = 0;
-  gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-  gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition, numComponents, type, normalize, stride, offset);
-  gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
-}
+  {
+    const numComponents = 4;
+    const type = gl.FLOAT;
+    const normalize = false;
+    const stride = 0;
+    const offset = 0;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
+    gl.vertexAttribPointer(programInfo.attribLocations.vertexColor, numComponents, type, normalize, stride, offset);
+    gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
+  }
 
-function setColorAttribute(gl, buffers, programInfo){
-  const numComponents = 4;
-  const type = gl.FLOAT;
-  const normalize = false;
-  const stride = 0;
-  const offset = 0;
-  gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
-  gl.vertexAttribPointer(programInfo.attribLocations.vertexColor, numComponents, type, normalize, stride, offset);
-  gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
+  {
+    const vertexCount = 36;
+    const type = gl.UNSIGNED_SHORT;
+    const offset = 0;
+    gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
+  }
 }
 
 function main(){
@@ -150,21 +160,24 @@ function main(){
   gl.clear(gl.COLOR_BUFFER_BIT);
 
   const vsSource = `
-    attribute vec4 aVertexPosition;
-    attribute vec4 aVertexColor;
-    uniform mat4 uModelViewMatrix;
-    uniform mat4 uProjectionMatrix;
-    varying lowp vec4 vColor;
+    attribute vec4 vPosition;
+    attribute vec4 vColor;
+    varying vec4 fColor;
+    uniform mat4 modelViewMatrix;
+    uniform mat4 projectionMatrix;
     void main(void) {
-      gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-      vColor = aVertexColor;
+      gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+      fColor = vColor;
     }
   `;
 
   const fsSource = `
-    varying lowp vec4 vColor;
+    #ifdef GL_ES
+    precision highp float;
+    #endif
+    varying vec4 fColor;
     void main(void) {
-      gl_FragColor = vColor;
+      gl_FragColor = fColor;
     }
   `;
 
@@ -173,16 +186,20 @@ function main(){
   const programInfo = {
     program: shaderProgram,
     attribLocations: {
-      vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
-      vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
+      vertexPosition: gl.getAttribLocation(shaderProgram, "vPosition"),
+      vertexColor: gl.getAttribLocation(shaderProgram, "vColor"),
     },
     uniformLocations: {
-      projectionMatrix: gl.getUniformLocation(shaderProgram, "uProjectionMatrix"),
-      modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
+      projectionMatrix: gl.getUniformLocation(shaderProgram, "projectionMatrix"),
+      modelViewMatrix: gl.getUniformLocation(shaderProgram, "modelViewMatrix"),
     },
   };
 
   const buffers = initBuffers(gl);
+
+  document.getElementById("fovSlider").onchange = function(event) {
+    fovy = event.target.value;
+};
 
   let then = 0;
 
@@ -190,9 +207,9 @@ function main(){
     now *= 0.001;
     deltaTime = now - then;
     then = now;
+    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    drawScene(gl, programInfo, buffers, cubeRotation);
-    cubeRotation += deltaTime;
+    drawScene(gl, programInfo, buffers);
 
     requestAnimationFrame(render);
   }
@@ -229,3 +246,5 @@ function loadShader(gl, type, source){
 
   return shader;
 }
+
+main();

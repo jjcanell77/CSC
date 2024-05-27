@@ -1,5 +1,3 @@
-package CSC400.M6;
-
 public class ShellSort {
     public void Sort(int[] array){
         // start with a big gap, then reduce the gap
