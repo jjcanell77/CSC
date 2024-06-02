@@ -1,243 +1,182 @@
-var cubeRotation = 0.0;
-var deltaTime = 0;
-var radius = 4.0;
-var theta = 0;
-var phi = 0;
-var near = 0.3;
-var far = 3.0;
-var left = -5.0;
-var right = 5.0;
-var bottom = -5.0;
-var ytop = 5.0;
-var fovy = 45.0;
-var aspect = 1.0;
+let cubeRotation = 0.0;
+let xyzRoation = [0, 0, 1];
+let deltaTime = 0;
+let rotationDirection = 1; 
+let near = 0.1;
+let far = 100.0;
+let radius = 6.0; // Distance of the camera from the origin
+let theta = 0; // Initial theta value
+let phi = 0; // Initial phi value
+const at = [0.0, 0.0, 0.0]; // Look-at point
+const up = [0.0, 1.0, 0.0]; // Up vector
 
-const at = vec3.fromValues(0.0, 0.0, 0.0);
-const up = vec3.fromValues(0.0, 1.0, 0.0);
+main();
 
-const vertices = [
-    vec4.fromValues(-0.5, -0.5,  1.5, 1.0),
-    vec4.fromValues(-0.5,  0.5,  1.5, 1.0),
-    vec4.fromValues(0.5,  0.5,  1.5, 1.0),
-    vec4.fromValues(0.5, -0.5,  1.5, 1.0),
-    vec4.fromValues(-0.5, -0.5, 0.5, 1.0),
-    vec4.fromValues(-0.5,  0.5, 0.5, 1.0),
-    vec4.fromValues(0.5,  0.5, 0.5, 1.0),
-    vec4.fromValues(0.5, -0.5, 0.5, 1.0)
-];
-
-const vertexColors = [
-    vec4.fromValues(0.0, 0.0, 0.0, 1.0),  // black
-    vec4.fromValues(1.0, 0.0, 0.0, 1.0),  // red
-    vec4.fromValues(1.0, 1.0, 0.0, 1.0),  // yellow
-    vec4.fromValues(0.0, 1.0, 0.0, 1.0),  // green
-    vec4.fromValues(0.0, 0.0, 1.0, 1.0),  // blue
-    vec4.fromValues(1.0, 0.0, 1.0, 1.0),  // magenta
-    vec4.fromValues(0.0, 1.0, 1.0, 1.0),  // cyan
-    vec4.fromValues(1.0, 1.0, 1.0, 1.0)   // white
-];
-
-let pointsArray = [];
-let colorsArray = [];
-
-function quad(a, b, c, d) {
-    pointsArray.push(...vertices[a]);
-    colorsArray.push(...vertexColors[a]);
-    pointsArray.push(...vertices[b]);
-    colorsArray.push(...vertexColors[a]);
-    pointsArray.push(...vertices[c]);
-    colorsArray.push(...vertexColors[a]);
-    pointsArray.push(...vertices[a]);
-    colorsArray.push(...vertexColors[a]);
-    pointsArray.push(...vertices[c]);
-    colorsArray.push(...vertexColors[a]);
-    pointsArray.push(...vertices[d]);
-    colorsArray.push(...vertexColors[a]);
-}
-
-function colorCube() {
-    quad(1, 0, 3, 2);
-    quad(2, 3, 7, 6);
-    quad(3, 0, 4, 7);
-    quad(6, 5, 1, 2);
-    quad(4, 5, 6, 7);
-    quad(5, 4, 0, 1);
-}
-
-function initBuffers(gl){
-    colorCube();
-    const positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pointsArray), gl.STATIC_DRAW);
-
-    const colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorsArray), gl.STATIC_DRAW);
-
-    return {
-        position: positionBuffer,
-        color: colorBuffer
-    };
-}
-
-function drawScene(gl, programInfo, buffers){
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  gl.clearDepth(1.0);
-  gl.enable(gl.DEPTH_TEST);
-  gl.depthFunc(gl.LEQUAL);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-
-  const eye = vec3.fromValues(
-    radius * Math.sin(theta) * Math.cos(phi),
-    radius * Math.sin(theta) * Math.sin(phi),
-    radius * Math.cos(theta)
-  );
-
-  const modelViewMatrix = mat4.create();
-  mat4.lookAt(modelViewMatrix, eye, at, up);
-
-  const fieldOfView = (fovy * Math.PI) / 180;
-  const projectionMatrix = mat4.create();
-  mat4.perspective(projectionMatrix, fieldOfView, aspect, near, far);
-
-  gl.useProgram(programInfo.program);
-  gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
-  gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix);
-
-  gl.useProgram(programInfo.program);
-
-  gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix);
-  gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
-
-  {
-    const numComponents = 4;
-    const type = gl.FLOAT;
-    const normalize = false;
-    const stride = 0;
-    const offset = 0;
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-    gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition, numComponents, type, normalize, stride, offset);
-    gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
-  }
-
-  {
-    const numComponents = 4;
-    const type = gl.FLOAT;
-    const normalize = false;
-    const stride = 0;
-    const offset = 0;
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
-    gl.vertexAttribPointer(programInfo.attribLocations.vertexColor, numComponents, type, normalize, stride, offset);
-    gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
-  }
-
-  {
-    const vertexCount = 36;
-    const type = gl.UNSIGNED_SHORT;
-    const offset = 0;
-    gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
-  }
-}
-
-function main(){
-  const canvas = document.querySelector("#webgl");
+// start here
+function main() {
+  const canvas = document.querySelector("#glcanvas");
   const gl = canvas.getContext("webgl");
 
+  // Only continue if WebGL is available and working
   if (gl === null) {
-    alert("Unable to initialize WebGL. Your browser or machine may not support it.");
+    alert(
+      "Unable to initialize WebGL. Your browser or machine may not support it."
+    );
     return;
   }
 
+  // Set clear color to black, fully opaque
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  // Clear the color buffer with specified clear color
   gl.clear(gl.COLOR_BUFFER_BIT);
 
+  // vertex shader program
   const vsSource = `
-    attribute vec4 vPosition;
-    attribute vec4 vColor;
-    varying vec4 fColor;
-    uniform mat4 modelViewMatrix;
-    uniform mat4 projectionMatrix;
+    attribute vec4 aVertexPosition;
+    attribute vec4 aVertexColor;
+
+    uniform mat4 uModelViewMatrix;
+    uniform mat4 uProjectionMatrix;
+
+    varying lowp vec4 vColor;
+
     void main(void) {
-      gl_Position = projectionMatrix * modelViewMatrix * vPosition;
-      fColor = vColor;
+      gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+      vColor = aVertexColor;
     }
   `;
 
-  const fsSource = `
-    #ifdef GL_ES
-    precision highp float;
-    #endif
-    varying vec4 fColor;
+ // fragment shader program
+ const fsSource = `
+    varying lowp vec4 vColor;
+
     void main(void) {
-      gl_FragColor = fColor;
+      gl_FragColor = vColor;
     }
   `;
 
+  // Initialize a shader program; this is where all the lighting
+  // for the vertices and so forth is established.
   const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
 
-  const programInfo = {
-    program: shaderProgram,
-    attribLocations: {
-      vertexPosition: gl.getAttribLocation(shaderProgram, "vPosition"),
-      vertexColor: gl.getAttribLocation(shaderProgram, "vColor"),
-    },
-    uniformLocations: {
-      projectionMatrix: gl.getUniformLocation(shaderProgram, "projectionMatrix"),
-      modelViewMatrix: gl.getUniformLocation(shaderProgram, "modelViewMatrix"),
-    },
-  };
+  // Collect all the info needed to use the shader program.
+// Look up which attributes our shader program is using
+// for aVertexPosition, aVertexColor and also
+// look up uniform locations.
+const programInfo = {
+  program: shaderProgram,
+  attribLocations: {
+    vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
+    vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
+  },
+  uniformLocations: {
+    projectionMatrix: gl.getUniformLocation(shaderProgram, "uProjectionMatrix"),
+    modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
+  },
+};
 
+
+  // Here's where we call the routine that builds all the
+  // objects we'll be drawing.
   const buffers = initBuffers(gl);
 
-  document.getElementById("fovSlider").onchange = function(event) {
-    fovy = event.target.value;
-};
+  // Get the buttons from the DOM
+  const rotateLeftButton = document.getElementById('rotateLeft');
+  const rotateRightButton = document.getElementById('rotateRight');
+  const rotateZButton = document.getElementById('rotateZ');
+  const rotateYButton = document.getElementById('rotateY');
+  const rotateXButton = document.getElementById('rotateX');
+
+  const depthSlider = document.getElementById('depthSlider')
+  const resetDepth = document.getElementById('resetDepth')
+
+  // Event listeners for changing the rotation direction
+  rotateLeftButton.onclick = function() {
+    rotationDirection = 1; // Counterclockwise
+  };
+  rotateRightButton.onclick = function() {
+    rotationDirection = -1; // Clockwise
+  };
+  rotateZButton.onclick = function() {
+    xyzRoation = [0, 0, 1];
+    console.log(xyzRoation)
+  };
+  rotateYButton.onclick = function() {
+    xyzRoation = [0, 1, 0];
+    console.log(xyzRoation)
+  };
+  rotateXButton.onclick = function() {
+    xyzRoation = [1, 0, 0];
+    console.log(xyzRoation)
+  };
+  depthSlider.onchange = function(event) {
+    far = event.target.value/2;
+    near = -event.target.value/2
+  };
+
+  resetDepth.onclick = function() {
+    far = 100.0;
+    near = 0.1;
+  };
 
   let then = 0;
 
-  function render(now){
-    now *= 0.001;
+  // Draw the scene repeatedly
+  function render(now) {
+    now *= 0.001; // convert to seconds
     deltaTime = now - then;
     then = now;
-    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    drawScene(gl, programInfo, buffers);
+    drawScene(gl, programInfo, buffers, cubeRotation, xyzRoation);
+    cubeRotation += deltaTime * rotationDirection; // Update based on direction
 
     requestAnimationFrame(render);
   }
   requestAnimationFrame(render);
 }
 
-function initShaderProgram(gl, vsSource, fsSource){
+// initializes a shader program, so WebGL knows how to draw our data
+function initShaderProgram(gl, vsSource, fsSource) {
   const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
   const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
 
+  // Create the shader program
   const shaderProgram = gl.createProgram();
   gl.attachShader(shaderProgram, vertexShader);
   gl.attachShader(shaderProgram, fragmentShader);
   gl.linkProgram(shaderProgram);
 
+  // checks if failed
   if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-    alert(`Unable to initialize the shader program: ${gl.getProgramInfoLog(shaderProgram)}`);
+    alert(
+      `Unable to initialize the shader program: ${gl.getProgramInfoLog(
+        shaderProgram
+      )}`
+    );
     return null;
   }
 
   return shaderProgram;
 }
 
-function loadShader(gl, type, source){
+// creates a shader of the given type, uploads the source and compiles it.
+function loadShader(gl, type, source) {
   const shader = gl.createShader(type);
+
+  // Send the source to the shader object
   gl.shaderSource(shader, source);
+
+  // Compile the shader program
   gl.compileShader(shader);
 
+  // See if it compiled successfully
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    alert(`An error occurred compiling the shaders: ${gl.getShaderInfoLog(shader)}`);
+    alert(
+      `An error occurred compiling the shaders: ${gl.getShaderInfoLog(shader)}`
+    );
     gl.deleteShader(shader);
     return null;
   }
 
   return shader;
 }
-
-main();

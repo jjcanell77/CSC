@@ -1,20 +1,28 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Interactive WebGL Viewer</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"></script>
-  <style>
-     body { margin: 0; }
-     canvas { display: block; }
-  </style>
-</head>
-<body>
-  <canvas id="webgl" width="1000" height="1000"></canvas>
-     <div>
-          <label>FOV: 1<input id="fovSlider" type="range" min="1" max="180" step="1" value="45" />180</label>
-
-     </div>
-  <script src="index.js"></script>
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>WebGL Demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"></script>
+    <script type="text/javascript" src="init-buffers.js"></script>
+    <script type="text/javascript" src="draw-scene.js"></script>
+  </head>
+  <body>
+    <div>
+      <button id="rotateLeft">Rotate Left</button>
+      <button id="rotateRight">Rotate Right</button>
+      <button id="rotateZ">Rotate Z</button>
+      <button id="rotateY">Rotate Y</button>
+      <button id="rotateX">Rotate X</button>
+    </div>
+    <div>
+      <p>Depth:</p>
+      0.5
+      <input type="range" id="depthSlider" step="0.1" min="0.5" max="3" value="2">
+      3
+      <button id="resetDepth">Reset Depth</button>
+    </div>
+    <canvas id="glcanvas" width="640" height="480"></canvas>
+    <script src="index.js"></script>
+  </body>
 </html>
