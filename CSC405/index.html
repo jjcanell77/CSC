@@ -2,26 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>WebGL Demo</title>
+    <title>Approximating a Sphere Recursively</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"></script>
     <script type="text/javascript" src="init-buffers.js"></script>
     <script type="text/javascript" src="draw-scene.js"></script>
+    <script type="text/javascript" src="./Common/MV.js"></script>
   </head>
   <body>
     <div>
-      <button id="rotateLeft">Rotate Left</button>
-      <button id="rotateRight">Rotate Right</button>
-      <button id="rotateZ">Rotate Z</button>
-      <button id="rotateY">Rotate Y</button>
-      <button id="rotateX">Rotate X</button>
+      <button id = "increaseR">Increase R</button>
+      <button id = "decreaseR">Decrease R</button>
+      <p> </p>
+      <button id = "increaseTheta">Increase theta</button>
+      <button id = "decreaseTheta">Decrease theta</button>
+      <button id = "increasePhi">Increase phi</button>
+      <button id = "decreasePhi">Decrease phi</button>
+      <p> </p>
+      <button id = "increaseSub">Increase Subdivisions</button>
+      <button id = "decreaseSub">Decrease Subdivisions</button>
     </div>
-    <div>
-      <p>Depth:</p>
-      0.5
-      <input type="range" id="depthSlider" step="0.1" min="0.5" max="3" value="2">
-      3
-      <button id="resetDepth">Reset Depth</button>
-    </div>
+    <p> </p>
     <canvas id="glcanvas" width="640" height="480"></canvas>
     <script src="index.js"></script>
   </body>

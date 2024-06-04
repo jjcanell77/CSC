@@ -1,14 +1,86 @@
-let cubeRotation = 0.0;
+let sphereRotation = 0.0;
 let xyzRoation = [0, 0, 1];
 let deltaTime = 0;
 let rotationDirection = 1; 
+let numTimesToSubdivide = 3;
+
+let index = 0;
+
+let positionsArray = [];
+let normalsArray = [];
+
 let near = 0.1;
 let far = 100.0;
-let radius = 6.0; // Distance of the camera from the origin
-let theta = 0; // Initial theta value
-let phi = 0; // Initial phi value
-const at = [0.0, 0.0, 0.0]; // Look-at point
-const up = [0.0, 1.0, 0.0]; // Up vector
+let radius = 1.5; // Distance of the camera from the origin
+let theta = 0.1;
+let phi = 0.0;
+let dr = 5.0 * Math.PI/180.0;
+
+let left = -3.0;
+let right = 3.0;
+//let top = 3.0;
+let bottom = -3.0;
+
+var va = vec4(0.0, 0.0, -1.0,1);
+var vb = vec4(0.0, 0.942809, 0.333333, 1);
+var vc = vec4(-0.816497, -0.471405, 0.333333, 1);
+var vd = vec4(0.816497, -0.471405, 0.333333,1);
+
+let lightPosition = vec4(1.0, 1.0, 1.0, 0.0);
+let lightAmbient = vec4(0.2, 0.2, 0.2, 1.0);
+let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
+let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
+
+let materialAmbient = vec4(1.0, 0.0, 1.0, 1.0);
+let materialDiffuse = vec4(1.0, 0.8, 0.0, 1.0);
+let materialSpecular = vec4(1.0, 1.0, 1.0, 1.0);
+let materialShininess = 20.0;
+
+let ctm;
+let ambientColor, diffuseColor, specularColor;
+
+let modelViewMatrix, projectionMatrix;
+let modelViewMatrixLoc, projectionMatrixLoc;
+let eyeLoc;
+
+let eye;
+let at = vec3(0.0, 0.0, 0.0);
+let up = vec3(0.0, 1.0, 0.0);
+
+function triangle(a, b, c) {
+  // normals are vectors
+  normalsArray.push(vec4(a[0], a[1], a[2], 0.0));
+  normalsArray.push(vec4(b[0], b[1], b[2], 0.0));
+  normalsArray.push(vec4(c[0], c[1], c[2], 0.0));
+
+  positionsArray.push(a);
+  positionsArray.push(b);
+  positionsArray.push(c);
+
+  index += 3;
+}
+
+function divideTriangle(a, b, c, count) {
+  if (count > 0) {
+      const ab = normalize(mix(a, b, 0.5), true);
+      const ac = normalize(mix(a, c, 0.5), true);
+      const bc = normalize(mix(b, c, 0.5), true);
+
+      divideTriangle(a, ab, ac, count - 1);
+      divideTriangle(ab, b, bc, count - 1);
+      divideTriangle(bc, c, ac, count - 1);
+      divideTriangle(ab, bc, ac, count - 1);
+  } else {
+      triangle(a, b, c);
+  }
+}
+
+function tetrahedron(a, b, c, d, n) {
+  divideTriangle(a, b, c, n);
+  divideTriangle(d, c, b, n);
+  divideTriangle(a, d, b, n);
+  divideTriangle(a, c, d, n);
+}
 
 main();
 
@@ -18,7 +90,7 @@ function main() {
   const gl = canvas.getContext("webgl");
 
   // Only continue if WebGL is available and working
-  if (gl === null) {
+  if (!gl) {
     alert(
       "Unable to initialize WebGL. Your browser or machine may not support it."
     );
@@ -26,97 +98,126 @@ function main() {
   }
 
   // Set clear color to black, fully opaque
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clearColor(1.0, 1.0, 1.0, 1.0);
+
+  gl.viewport(0, 0, canvas.width, canvas.height);
   // Clear the color buffer with specified clear color
   gl.clear(gl.COLOR_BUFFER_BIT);
 
   // vertex shader program
   const vsSource = `
-    attribute vec4 aVertexPosition;
-    attribute vec4 aVertexColor;
-
-    uniform mat4 uModelViewMatrix;
-    uniform mat4 uProjectionMatrix;
-
-    varying lowp vec4 vColor;
-
-    void main(void) {
-      gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-      vColor = aVertexColor;
-    }
+  attribute vec4 aPosition;
+  attribute vec4 aNormal;
+  varying vec3 vN, vL, vE;
+  
+  uniform mat4 uModelViewMatrix;
+  uniform mat4 uProjectionMatrix;
+  uniform vec4 uLightPosition;
+  uniform mat3 uNormalMatrix;
+  
+  void main() {
+      vec3 pos = (uModelViewMatrix * aPosition).xyz;
+      if (uLightPosition.w == 0.0) {
+          vL = normalize(uLightPosition.xyz);
+      } else {
+          vL = normalize(uLightPosition.xyz - pos);
+      }
+      vE = -normalize(pos);
+      vN = normalize(uNormalMatrix * aNormal.xyz);
+      gl_Position = uProjectionMatrix * uModelViewMatrix * aPosition;
+  }  
   `;
 
- // fragment shader program
- const fsSource = `
-    varying lowp vec4 vColor;
+  // fragment shader program
+  const fsSource = `
+    precision mediump float;
 
-    void main(void) {
-      gl_FragColor = vColor;
-    }
+    uniform vec4 uAmbientProduct;
+    uniform vec4 uDiffuseProduct;
+    uniform vec4 uSpecularProduct;
+    uniform float uShininess;
+
+    varying vec3 vN, vL, vE;
+    
+    void main() {
+        vec3 H = normalize(vL + vE);
+        vec4 ambient = uAmbientProduct;
+    
+        float Kd = max(dot(vL, vN), 0.0);
+        vec4 diffuse = Kd * uDiffuseProduct;
+    
+        float Ks = pow(max(dot(vN, H), 0.0), uShininess);
+        vec4 specular = Ks * uSpecularProduct;
+    
+        if (dot(vL, vN) < 0.0) {
+            specular = vec4(0.0, 0.0, 0.0, 1.0);
+        }
+    
+        gl_FragColor = ambient + diffuse + specular;
+        gl_FragColor.a = 1.0;
+    }  
   `;
 
   // Initialize a shader program; this is where all the lighting
   // for the vertices and so forth is established.
   const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
 
+  // tells WebGL to use our program when drawing
+  gl.useProgram(shaderProgram);
+
   // Collect all the info needed to use the shader program.
-// Look up which attributes our shader program is using
-// for aVertexPosition, aVertexColor and also
-// look up uniform locations.
-const programInfo = {
-  program: shaderProgram,
-  attribLocations: {
-    vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
-    vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
-  },
-  uniformLocations: {
-    projectionMatrix: gl.getUniformLocation(shaderProgram, "uProjectionMatrix"),
-    modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
-  },
-};
+  // Look up which attributes our shader program is using
+  // for aVertexPosition, aVertexColor and also
+  // look up uniform locations.
+  const programInfo = {
+    program: shaderProgram,
+    attribLocations: {
+      vertexPosition: gl.getAttribLocation(shaderProgram, "aPosition"),
+      vertexNormal: gl.getAttribLocation(shaderProgram, "aNormal"),
+    },
+    uniformLocations: {
+      projectionMatrix: gl.getUniformLocation(shaderProgram, "uProjectionMatrix"),
+      modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
+      normalMatrix: gl.getUniformLocation(shaderProgram, "uNormalMatrix"),
+      ambientProduct: gl.getUniformLocation(shaderProgram, "uAmbientProduct"),
+      diffuseProduct: gl.getUniformLocation(shaderProgram, "uDiffuseProduct"),
+      specularProduct: gl.getUniformLocation(shaderProgram, "uSpecularProduct"),
+      shininess: gl.getUniformLocation(shaderProgram, "uShininess"),
+      lightPosition: gl.getUniformLocation(shaderProgram, "uLightPosition")
+    }
+  };
 
+  
+   ambientProduct = mult(lightAmbient, materialAmbient);
+   diffuseProduct = mult(lightDiffuse, materialDiffuse);
+   specularProduct = mult(lightSpecular, materialSpecular);
 
+   
   // Here's where we call the routine that builds all the
   // objects we'll be drawing.
   const buffers = initBuffers(gl);
 
-  // Get the buttons from the DOM
-  const rotateLeftButton = document.getElementById('rotateLeft');
-  const rotateRightButton = document.getElementById('rotateRight');
-  const rotateZButton = document.getElementById('rotateZ');
-  const rotateYButton = document.getElementById('rotateY');
-  const rotateXButton = document.getElementById('rotateX');
-
-  const depthSlider = document.getElementById('depthSlider')
-  const resetDepth = document.getElementById('resetDepth')
-
-  // Event listeners for changing the rotation direction
-  rotateLeftButton.onclick = function() {
-    rotationDirection = 1; // Counterclockwise
-  };
-  rotateRightButton.onclick = function() {
-    rotationDirection = -1; // Clockwise
-  };
-  rotateZButton.onclick = function() {
-    xyzRoation = [0, 0, 1];
-    console.log(xyzRoation)
-  };
-  rotateYButton.onclick = function() {
-    xyzRoation = [0, 1, 0];
-    console.log(xyzRoation)
-  };
-  rotateXButton.onclick = function() {
-    xyzRoation = [1, 0, 0];
-    console.log(xyzRoation)
-  };
-  depthSlider.onchange = function(event) {
-    far = event.target.value/2;
-    near = -event.target.value/2
-  };
-
-  resetDepth.onclick = function() {
-    far = 100.0;
-    near = 0.1;
+  // Get the buttons from the DOM &  Event listeners for changing
+  document.getElementById('increaseR').onclick = function(){radius *= 2.0;};
+  document.getElementById('decreaseR').onclick = function(){radius *= 0.5;};
+  document.getElementById('increaseTheta').onclick = function(){theta += dr;};
+  document.getElementById('decreaseTheta').onclick = function(){theta -= dr;};
+  document.getElementById('increasePhi').onclick = function(){phi += dr;};
+  document.getElementById('decreasePhi').onclick = function(){phi -= dr;};
+  document.getElementById('increaseSub').onclick = function()
+  {
+    numTimesToSubdivide++;
+    index = 0;
+    positionsArray = [];
+    normalsArray = [];
+    const buffers = initBuffers(gl);  };
+  document.getElementById('decreaseSub').onclick = function()
+  {
+    if(numTimesToSubdivide) numTimesToSubdivide--;
+    index = 0;
+    positionsArray = [];
+    normalsArray = [];    
+    const buffers = initBuffers(gl);
   };
 
   let then = 0;
@@ -126,14 +227,16 @@ const programInfo = {
     now *= 0.001; // convert to seconds
     deltaTime = now - then;
     then = now;
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    drawScene(gl, programInfo, buffers, cubeRotation, xyzRoation);
-    cubeRotation += deltaTime * rotationDirection; // Update based on direction
+    drawScene(gl, programInfo, buffers, sphereRotation, xyzRoation);
+    sphereRotation += deltaTime * rotationDirection; // Update based on direction
 
     requestAnimationFrame(render);
   }
   requestAnimationFrame(render);
 }
+
 
 // initializes a shader program, so WebGL knows how to draw our data
 function initShaderProgram(gl, vsSource, fsSource) {

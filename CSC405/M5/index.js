@@ -18,7 +18,7 @@ function main() {
   const gl = canvas.getContext("webgl");
 
   // Only continue if WebGL is available and working
-  if (gl === null) {
+  if (!gl) {
     alert(
       "Unable to initialize WebGL. Your browser or machine may not support it."
     );
@@ -46,8 +46,8 @@ function main() {
     }
   `;
 
- // fragment shader program
- const fsSource = `
+  // fragment shader program
+  const fsSource = `
     varying lowp vec4 vColor;
 
     void main(void) {
@@ -59,21 +59,24 @@ function main() {
   // for the vertices and so forth is established.
   const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
 
+  // tells WebGL to use our program when drawing
+  gl.useProgram(shaderProgram);
+
   // Collect all the info needed to use the shader program.
-// Look up which attributes our shader program is using
-// for aVertexPosition, aVertexColor and also
-// look up uniform locations.
-const programInfo = {
-  program: shaderProgram,
-  attribLocations: {
-    vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
-    vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
-  },
-  uniformLocations: {
-    projectionMatrix: gl.getUniformLocation(shaderProgram, "uProjectionMatrix"),
-    modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
-  },
-};
+  // Look up which attributes our shader program is using
+  // for aVertexPosition, aVertexColor and also
+  // look up uniform locations.
+  const programInfo = {
+    program: shaderProgram,
+    attribLocations: {
+      vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
+      vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
+    },
+    uniformLocations: {
+      projectionMatrix: gl.getUniformLocation(shaderProgram, "uProjectionMatrix"),
+      modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
+    },
+  };
 
 
   // Here's where we call the routine that builds all the
@@ -99,15 +102,12 @@ const programInfo = {
   };
   rotateZButton.onclick = function() {
     xyzRoation = [0, 0, 1];
-    console.log(xyzRoation)
   };
   rotateYButton.onclick = function() {
     xyzRoation = [0, 1, 0];
-    console.log(xyzRoation)
   };
   rotateXButton.onclick = function() {
     xyzRoation = [1, 0, 0];
-    console.log(xyzRoation)
   };
   depthSlider.onchange = function(event) {
     far = event.target.value/2;
@@ -126,6 +126,7 @@ const programInfo = {
     now *= 0.001; // convert to seconds
     deltaTime = now - then;
     then = now;
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     drawScene(gl, programInfo, buffers, cubeRotation, xyzRoation);
     cubeRotation += deltaTime * rotationDirection; // Update based on direction
@@ -134,6 +135,7 @@ const programInfo = {
   }
   requestAnimationFrame(render);
 }
+
 
 // initializes a shader program, so WebGL knows how to draw our data
 function initShaderProgram(gl, vsSource, fsSource) {

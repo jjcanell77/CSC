@@ -1,10 +1,7 @@
 function drawScene(gl, programInfo, buffers, cubeRotation, xyzRoation) {
   // Clear the canvas before we start drawing on it.
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  gl.clearDepth(1.0);
+  // gl.clearDepth(1.0);
   gl.enable(gl.DEPTH_TEST); // Enable depth testing
-  gl.depthFunc(gl.LEQUAL); // Near things obscure far things
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // set up the camera from the eye
   const eye = [
@@ -46,7 +43,7 @@ function drawScene(gl, programInfo, buffers, cubeRotation, xyzRoation) {
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
 
   // tells WebGL to use our program when drawing
-  gl.useProgram(programInfo.program);
+  // gl.useProgram(programInfo.program);
 
   // sets the shader uniforms
   gl.uniformMatrix4fv(
