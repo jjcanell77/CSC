@@ -3,12 +3,15 @@
   <head>
     <meta charset="utf-8" />
     <title>Approximating a Sphere Recursively</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"></script>
     <script type="text/javascript" src="init-buffers.js"></script>
     <script type="text/javascript" src="draw-scene.js"></script>
     <script type="text/javascript" src="./Common/MV.js"></script>
   </head>
   <body>
     <div>
+      <button id = "increaseR">Increase R</button>
+      <button id = "decreaseR">Decrease R</button>
       <p> </p>
       <button id = "increaseTheta">Increase theta</button>
       <button id = "decreaseTheta">Decrease theta</button>
@@ -19,7 +22,7 @@
       <button id = "decreaseSub">Decrease Subdivisions</button>
     </div>
     <p> </p>
-    <canvas id="glcanvas" width="512" height="512">
-      <script src="index.js"></script>
+    <canvas id="glcanvas" width="640" height="480"></canvas>
+    <script src="index.js"></script>
   </body>
 </html>
