@@ -1,7 +1,10 @@
-function drawScene(gl, programInfo, buffers, cubeRotation, xyzRoation) {
+function drawScene(gl, programInfo, buffers, cubeRotation, xyzRoation, currentView, useAlternateShader) {
   // Clear the canvas before we start drawing on it.
-  // gl.clearDepth(1.0);
   gl.enable(gl.DEPTH_TEST); // Enable depth testing
+
+  // Set the background color to something other than black
+  gl.clearColor(0.2, 0.2, 0.2, 1.0); // Dark gray background
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // set up the camera from the eye
   const eye = [
@@ -26,7 +29,6 @@ function drawScene(gl, programInfo, buffers, cubeRotation, xyzRoation) {
     modelViewMatrix,  // destination matrix
     modelViewMatrix,  // matrix to translate
     [-0.0, 0.0, -5.0] // amount to translate
-
   ); 
   mat4.rotate(
     modelViewMatrix, // destination matrix
@@ -35,15 +37,20 @@ function drawScene(gl, programInfo, buffers, cubeRotation, xyzRoation) {
     xyzRoation     // axis to rotate around
   ); 
 
+  // tells WebGL to use our program when drawing
+  gl.useProgram(programInfo.program);
+
   // buffer into the vertexPosition attribute.
   setPositionAttribute(gl, buffers, programInfo);
-  setColorAttribute(gl, buffers, programInfo);
+
+  if (currentView === 'textured') {
+    setTextureAttribute(gl, buffers, programInfo);
+  } else {
+    setColorAttribute(gl, buffers, programInfo);
+  }
 
   // tells WebGL which indices to use to index the vertices
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
-
-  // tells WebGL to use our program when drawing
-  // gl.useProgram(programInfo.program);
 
   // sets the shader uniforms
   gl.uniformMatrix4fv(
@@ -57,12 +64,27 @@ function drawScene(gl, programInfo, buffers, cubeRotation, xyzRoation) {
     modelViewMatrix
   );
 
+  if (currentView === 'textured') {
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.uniform1i(programInfo.uniformLocations.uSampler, 0);
+  }
+
   // draws the square
   {
-    const vertexCount = 36;
-    const type = gl.UNSIGNED_SHORT;
-    const offset = 0;
-    gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
+    let vertexCount = 36;
+    let type = gl.UNSIGNED_SHORT;
+    let offset = 0;
+
+    if (currentView === 'wireframe') {
+      // Draw wireframe view
+      for (let i = 0; i < vertexCount; i += 3) {
+        gl.drawElements(gl.LINE_LOOP, 3, type, i * 2);
+      }
+    } else {
+      // Draw solid or textured view
+      gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
+    }
   }
 }
 
@@ -105,4 +127,24 @@ function setColorAttribute(gl, buffers, programInfo) {
     offset
   );
   gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
+}
+
+// Tell WebGL how to pull out the texture coordinates from the buffer
+// into the textureCoord attribute.
+function setTextureAttribute(gl, buffers, programInfo) {
+  const numComponents = 2; // because texture coordinates are 2D
+  const type = gl.FLOAT;
+  const normalize = false;
+  const stride = 0;
+  const offset = 0;
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffers.textureCoord);
+  gl.vertexAttribPointer(
+    programInfo.attribLocations.textureCoord,
+    numComponents,
+    type,
+    normalize,
+    stride,
+    offset
+  );
+  gl.enableVertexAttribArray(programInfo.attribLocations.textureCoord);
 }
