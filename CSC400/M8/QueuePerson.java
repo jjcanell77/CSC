@@ -40,7 +40,7 @@ public class QueuePerson {
     // calls quick sort the queue by age in descending order.
     public void sortByAge() {
         // creates a comparator that compares the objects based on lastName reversed so in descending order.
-        Comparator<Person> age = Comparator.comparingInt((Person p) -> p.age);
+        Comparator<Person> age = Comparator.comparingInt((Person p) -> p.age).reversed();
         int startingIndex = 0;
         int endingIndex = people.size() - 1;
         quickSort(age, startingIndex, endingIndex);
