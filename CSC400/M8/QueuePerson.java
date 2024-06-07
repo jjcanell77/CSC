@@ -40,7 +40,7 @@ public class QueuePerson {
     // calls quick sort the queue by age in descending order.
     public void sortByAge() {
         // creates a comparator that compares the objects based on lastName reversed so in descending order.
-        Comparator<Person> age = Comparator.comparingInt((Person p) -> p.age).reversed();
+        Comparator<Person> age = Comparator.comparingInt((Person p) -> p.age);
         int startingIndex = 0;
         int endingIndex = people.size() - 1;
         quickSort(age, startingIndex, endingIndex);
@@ -66,7 +66,7 @@ public class QueuePerson {
         int i = low - 1;
         for (int j = low; j < high; j++) {
             // if current person is smaller than the last person
-            if (comparator.compare(people.get(j), pivot) > 0) {
+            if (comparator.compare(pivot, people.get(j)) > 0) {
                 i++;
                 // handles the swap with current person j with smaller i
                 swap(i, j);
@@ -105,9 +105,9 @@ public class QueuePerson {
 
             queue.enqueue(new Person(firstName, lastName, age));
 
-            System.out.println("Do you want to add another person? (yes/no):");
+            System.out.println("Do you want to add another person? (y/press enter):");
             choice = scanner.nextLine();
-        } while (choice.equalsIgnoreCase("yes"));
+        } while (choice.equalsIgnoreCase("y"));
  
         // displays the queue before sorted.
         System.out.println("\nQueue before sorted:");
