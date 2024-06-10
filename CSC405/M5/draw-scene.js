@@ -1,4 +1,4 @@
-function drawScene(gl, programInfo, buffers, cubeRotation, xyzRoation, currentView, useAlternateShader) {
+function drawScene(gl, programInfo, buffers, cubeRotation,currentView) {
   // Clear the canvas before we start drawing on it.
   gl.enable(gl.DEPTH_TEST); // Enable depth testing
 
@@ -30,24 +30,36 @@ function drawScene(gl, programInfo, buffers, cubeRotation, xyzRoation, currentVi
     modelViewMatrix,  // matrix to translate
     [-0.0, 0.0, -5.0] // amount to translate
   ); 
-  mat4.rotate(
-    modelViewMatrix, // destination matrix
-    modelViewMatrix, // matrix to rotate
-    cubeRotation, // amount to rotate in radians
-    xyzRoation     // axis to rotate around
-  ); 
-
+  if(zRotation){
+    mat4.rotate(
+      modelViewMatrix, // destination matrix
+      modelViewMatrix, // matrix to rotate
+      cubeRotation, // amount to rotate in radians
+      [0, 0, 1]     // axis to rotate around
+    ); 
+  }
+  if(yRotation){
+    mat4.rotate(
+      modelViewMatrix, // destination matrix
+      modelViewMatrix, // matrix to rotate
+      cubeRotation, // amount to rotate in radians
+      [1, 0, 0]     // axis to rotate around
+    ); 
+  }
+  if(xRotation){
+    mat4.rotate(
+      modelViewMatrix, // destination matrix
+      modelViewMatrix, // matrix to rotate
+      cubeRotation, // amount to rotate in radians
+      [1, 0, 0]     // axis to rotate around
+    ); 
+  }
+  
   // tells WebGL to use our program when drawing
   gl.useProgram(programInfo.program);
 
   // buffer into the vertexPosition attribute.
   setPositionAttribute(gl, buffers, programInfo);
-
-  if (currentView === 'textured') {
-    setTextureAttribute(gl, buffers, programInfo);
-  } else {
-    setColorAttribute(gl, buffers, programInfo);
-  }
 
   // tells WebGL which indices to use to index the vertices
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
@@ -68,6 +80,9 @@ function drawScene(gl, programInfo, buffers, cubeRotation, xyzRoation, currentVi
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.uniform1i(programInfo.uniformLocations.uSampler, 0);
+    setTextureAttribute(gl, buffers, programInfo);
+  }else{
+    setColorAttribute(gl, buffers, programInfo);
   }
 
   // draws the square

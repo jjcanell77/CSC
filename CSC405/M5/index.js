@@ -1,5 +1,8 @@
 let cubeRotation = 0.0;
-let xyzRoation = [0, 0, 1];
+let xRotation = false;
+let yRotation = false;
+let zRotation = false;
+
 let deltaTime = 0;
 let rotationDirection = 1;
 let near = 0.1;
@@ -11,7 +14,6 @@ const at = [0.0, 0.0, 0.0]; // Look-at point
 const up = [0.0, 1.0, 0.0]; // Up vector
 
 let currentView = 'solid'; // solid, wireframe, textured
-let useAlternateShader = false; // flag to toggle shaders
 let texture; // texture variable
 
 // start here
@@ -60,47 +62,23 @@ function main() {
   // Load the texture
   texture = loadTexture(gl, 'texture.jpg');
 
-  // Get the buttons from the DOM
-  const rotateLeftButton = document.getElementById('rotateLeft');
-  const rotateRightButton = document.getElementById('rotateRight');
-  const rotateZButton = document.getElementById('rotateZ');
-  const rotateYButton = document.getElementById('rotateY');
-  const rotateXButton = document.getElementById('rotateX');
-  const wireframeViewButton = document.getElementById('wireframeView');
-  const solidViewButton = document.getElementById('solidView');
-  const texturedViewButton = document.getElementById('texturedView');
-  const toggleShaderButton = document.getElementById('toggleShader');
-
-  const depthSlider = document.getElementById('depthSlider');
-  const resetDepth = document.getElementById('resetDepth');
-
-  // Event listeners for changing the rotation direction
-  rotateLeftButton.onclick = function() {
-    rotationDirection = 1; // Counterclockwise
+  // event listeners for changing the rotation direction
+  document.getElementById('rotateLeft').onclick = function() {
+    rotationDirection = 1; // counterclockwise
   };
-  rotateRightButton.onclick = function() {
-    rotationDirection = -1; // Clockwise
+  document.getElementById('rotateRight').onclick = function() {
+    rotationDirection = -1; // clockwise
   };
-  rotateZButton.onclick = function() {
-    xyzRoation = [0, 0, 1];
+  document.getElementById('rotateZ').onclick = function() {
+    zRotation = !zRotation; // rotate on z-axis
   };
-  rotateYButton.onclick = function() {
-    xyzRoation = [0, 1, 0];
+  document.getElementById('rotateY').onclick = function() {
+    yRotation = !yRotation; // rotate on y-axis
   };
-  rotateXButton.onclick = function() {
-    xyzRoation = [1, 0, 0];
+  document.getElementById('rotateX').onclick = function() {
+    xRotation = !xRotation; // rotate on x-axis
   };
-  depthSlider.onchange = function(event) {
-    far = event.target.value / 2;
-    near = -event.target.value / 2;
-  };
-
-  resetDepth.onclick = function() {
-    far = 100.0;
-    near = 0.1;
-  };
-
-  wireframeViewButton.onclick = function() {
+  document.getElementById('wireframeView').onclick = function() {
     currentView = 'wireframe';
     shaderProgram = wireframeShaderProgram;
     programInfo.program = shaderProgram;
@@ -111,8 +89,7 @@ function main() {
     programInfo.uniformLocations.modelViewMatrix = gl.getUniformLocation(shaderProgram, "uModelViewMatrix");
     programInfo.uniformLocations.uSampler = null;
   };
-
-  solidViewButton.onclick = function() {
+  document.getElementById('solidView').onclick = function() {
     currentView = 'solid';
     shaderProgram = solidShaderProgram;
     programInfo.program = shaderProgram;
@@ -123,8 +100,7 @@ function main() {
     programInfo.uniformLocations.modelViewMatrix = gl.getUniformLocation(shaderProgram, "uModelViewMatrix");
     programInfo.uniformLocations.uSampler = null;
   };
-
-  texturedViewButton.onclick = function() {
+  document.getElementById('texturedView').onclick = function() {
     currentView = 'textured';
     shaderProgram = texturedShaderProgram;
     programInfo.program = shaderProgram;
@@ -135,9 +111,13 @@ function main() {
     programInfo.uniformLocations.modelViewMatrix = gl.getUniformLocation(shaderProgram, "uModelViewMatrix");
     programInfo.uniformLocations.uSampler = gl.getUniformLocation(shaderProgram, "uSampler");
   };
-
-  toggleShaderButton.onclick = function() {
-    useAlternateShader = !useAlternateShader;
+  document.getElementById('depthSlider').onchange = function(event) {
+    far = event.target.value / 2;
+    near = -event.target.value / 2;
+  };
+  document.getElementById('resetDepth').onclick = function() {
+    far = 100.0;
+    near = 0.1;
   };
 
   let then = 0;
@@ -149,7 +129,7 @@ function main() {
     then = now;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    drawScene(gl, programInfo, buffers, cubeRotation, xyzRoation, currentView, useAlternateShader);
+    drawScene(gl, programInfo, buffers, cubeRotation, currentView);
     cubeRotation += deltaTime * rotationDirection; // Update based on direction
 
     requestAnimationFrame(render);
