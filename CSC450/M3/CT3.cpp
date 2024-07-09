@@ -20,13 +20,14 @@ int main() {
      *ptr2 = value2;
      *ptr3 = value3;
 
+
      // prints the contents of the variables and then deallocates the memory
      cout << "Values entered:\t Pointers value:" << endl;
-     cout << "value1: " << value1 <<  "\t " <<  *ptr1 << endl;
+     cout << "value1: " << value1 <<  "\t " <<  ptr1 << endl;
      delete ptr1;
-     cout << "value2: " << value2 << "\t " << *ptr2 << endl;
+     cout << "value2: " << value2 << "\t " << ptr2 << endl;
      delete ptr2;
-     cout << "value3: " << value3 << "\t " << *ptr3 << endl;
+     cout << "value3: " << value3 << "\t " << ptr3 << endl;
      delete ptr3;
 
      return 0;
