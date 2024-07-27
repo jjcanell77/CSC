@@ -16,7 +16,7 @@ void incrementThread() {
           // ensures thread-safe access to the shared variable
           lock_guard<mutex> lock(mtx);
           ++counter;
-          cout << "Counting up: " << counter << endl;
+          cout << "counter is - " << counter << endl;
      }
 }
 
@@ -27,7 +27,7 @@ void decrementThread() {
           // ensures thread-safe access to the shared variable
           lock_guard<mutex> lock(mtx);
           --counter;
-          cout << "Counting down: " << counter << endl;
+          cout << "counter is - " << counter << endl;
      }
 }
 
