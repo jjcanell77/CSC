@@ -47,6 +47,7 @@
           "ostream": "cpp",
           "streambuf": "cpp",
           "typeinfo": "cpp",
-          "fstream": "cpp"
+          "fstream": "cpp",
+          "mutex": "cpp"
      }
 }
